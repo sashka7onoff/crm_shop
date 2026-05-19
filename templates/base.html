@@ -1,0 +1,337 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}CRM Система{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        background: '#FAF9F7',
+                        foreground: '#44403C',
+                        card: '#FDFCFA',
+                        'card-foreground': '#44403C',
+                        primary: '#7A7060',
+                        'primary-foreground': '#FAF9F7',
+                        secondary: '#F2F0EB',
+                        'secondary-foreground': '#5A5548',
+                        muted: '#F5F4F0',
+                        'muted-foreground': '#858070',
+                        accent: '#C8B898',
+                        'accent-foreground': '#44403C',
+                        destructive: '#A03030',
+                        border: '#E8E5DE',
+                        ring: '#9A9080',
+                        sidebar: '#F7F6F2',
+                        'sidebar-foreground': '#4C4840',
+                        'sidebar-accent': '#EDEAE3',
+                        'sidebar-accent-foreground': '#4C4840',
+                        'sidebar-border': '#E3E0D8',
+                    },
+                    fontFamily: {
+                        display: ['"Space Grotesk"', 'system-ui', 'sans-serif'],
+                        sans: ['"DM Sans"', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Space+Grotesk:wght@300..700&display=swap');
+
+        :root {
+            --gradient-warm: linear-gradient(135deg, #C8B898, #DDD5C5);
+            --gradient-deep: linear-gradient(135deg, #7A7060, #605848);
+            --shadow-soft: 0 1px 2px rgba(64, 60, 55, 0.04), 0 8px 24px rgba(64, 60, 55, 0.06);
+            --shadow-warm: 0 12px 40px rgba(100, 90, 75, 0.12);
+        }
+
+        * {
+            font-family: "DM Sans", system-ui, sans-serif;
+        }
+
+        body {
+            background-color: #FAF9F7;
+            color: #44403C;
+        }
+
+        .bg-background { background-color: #FAF9F7; }
+        .bg-background\/80 { background-color: rgba(250, 249, 247, 0.8); }
+        .bg-card { background-color: #FDFCFA; }
+        .bg-sidebar { background-color: #F7F6F2; }
+        .bg-sidebar-accent\/60 { background-color: rgba(237, 234, 227, 0.6); }
+        .bg-muted { background-color: #F5F4F0; }
+        .bg-muted\/60 { background-color: rgba(245, 244, 240, 0.6); }
+        .bg-muted\/40 { background-color: rgba(245, 244, 240, 0.4); }
+        .bg-secondary { background-color: #F2F0EB; }
+        .bg-accent { background-color: #C8B898; }
+        .bg-accent\/40 { background-color: rgba(200, 184, 152, 0.4); }
+        .bg-secondary-foreground { background-color: #5A5548; }
+        .bg-primary { background-color: #7A7060; }
+        .bg-primary\/10 { background-color: rgba(122, 112, 96, 0.1); }
+        .bg-primary\/85 { background-color: rgba(122, 112, 96, 0.85); }
+        .bg-primary\/90 { background-color: rgba(122, 112, 96, 0.9); }
+        .bg-destructive\/10 { background-color: rgba(160, 48, 48, 0.1); }
+        .bg-accent\/40 { background-color: rgba(200, 184, 152, 0.4); }
+
+        .text-card-foreground { color: #44403C; }
+        .text-muted-foreground { color: #858070; }
+        .text-muted-foreground\/70 { color: rgba(133, 128, 112, 0.7); }
+        .text-secondary-foreground { color: #5A5548; }
+        .text-accent-foreground { color: #44403C; }
+        .text-primary { color: #7A7060; }
+        .text-primary-foreground { color: #FAF9F7; }
+        .text-destructive { color: #A03030; }
+        .text-sidebar-foreground { color: #4C4840; }
+        .text-sidebar-accent-foreground { color: #4C4840; }
+        .text-foreground { color: #44403C; }
+
+        .border-border\/60 { border-color: rgba(232, 229, 222, 0.6); }
+        .border-transparent { border-color: transparent; }
+
+        .bg-\[image\:var\(--gradient-warm\)\] { background-image: var(--gradient-warm); }
+        .bg-\[image\:var\(--gradient-deep\)\] { background-image: var(--gradient-deep); }
+        .bg-gradient-warm { background-image: var(--gradient-warm); }
+        .bg-gradient-deep { background-image: var(--gradient-deep); }
+
+        .shadow-soft { box-shadow: var(--shadow-soft); }
+        .shadow-warm { box-shadow: var(--shadow-warm); }
+        .shadow-\[var\(--shadow-soft\)\] { box-shadow: var(--shadow-soft); }
+        .shadow-\[var\(--shadow-warm\)\] { box-shadow: var(--shadow-warm); }
+
+        .hover\:bg-sidebar-accent:hover { background-color: #EDEAE3; }
+        .hover\:text-sidebar-accent-foreground:hover { color: #4C4840; }
+        .hover\:bg-accent:hover { background-color: #C8B898; }
+        .hover\:text-accent-foreground:hover { color: #44403C; }
+        .hover\:bg-muted\/40:hover { background-color: rgba(245, 244, 240, 0.4); }
+        .hover\:text-foreground:hover { color: #44403C; }
+        .hover\:opacity-90:hover { opacity: 0.9; }
+        .hover\:opacity-95:hover { opacity: 0.95; }
+        .hover\:bg-primary\/90:hover { background-color: rgba(122, 112, 96, 0.9); }
+
+        .active\:bg-sidebar-accent:active { background-color: #EDEAE3; }
+        .active\:text-sidebar-accent-foreground:active { color: #4C4840; }
+
+        .focus-visible\:ring-1:focus-visible { box-shadow: 0 0 0 1px #9A9080; }
+        .focus-visible\:ring-2:focus-visible { box-shadow: 0 0 0 2px #9A9080; }
+        .ring-sidebar-ring:focus-visible { outline: 2px solid #9A9080; outline-offset: 2px; }
+
+        .data-\[active\=true\]\:bg-sidebar-accent[data-active="true"] { background-color: #EDEAE3; }
+        .data-\[active\=true\]\:font-medium[data-active="true"] { font-weight: 500; }
+        .data-\[active\=true\]\:text-sidebar-accent-foreground[data-active="true"] { color: #4C4840; }
+
+        .backdrop-blur-md { backdrop-filter: blur(12px); }
+        .min-h-svh { min-height: 100svh; }
+        .h-svh { height: 100svh; }
+        .w-\(--sidebar-width\) { width: var(--sidebar-width); }
+        .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border-width: 0; }
+
+        .group-data-\[collapsible\=icon\]\:hidden { display: none; }
+        .group-data-\[collapsible\=icon\]\:opacity-0 { opacity: 0; }
+        .group-data-\[collapsible\=icon\]\:-mt-8 { margin-top: -2rem; }
+        .group-data-\[collapsible\=icon\]\:!size-8 { width: 2rem !important; height: 2rem !important; }
+        .group-data-\[collapsible\=icon\]\:!p-2 { padding: 0.5rem !important; }
+
+        a[data-status="active"] {
+            background-color: #EDEAE3;
+            font-weight: 500;
+            color: #4C4840;
+        }
+
+        tbody tr:hover {
+            background-color: rgba(245, 244, 240, 0.4);
+        }
+
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #E3E0D8; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #D5D2CA; }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="min-h-screen">
+    <div class="group/sidebar-wrapper flex min-h-svh w-full" style="--sidebar-width: 16rem; --sidebar-width-icon: 3rem;">
+        <div class="flex min-h-screen w-full bg-background">
+            <!-- Sidebar -->
+            <aside class="group peer hidden text-sidebar-foreground md:block" data-state="expanded" data-collapsible="" data-variant="sidebar" data-side="left">
+                <div class="relative w-[--sidebar-width] bg-transparent transition-[width] duration-200 ease-linear"></div>
+                <div class="fixed inset-y-0 z-10 hidden h-svh w-[--sidebar-width] transition-[left,right,width] duration-200 ease-linear md:flex left-0 border-r border-border/60">
+                    <div data-sidebar="sidebar" class="flex h-full w-full flex-col bg-sidebar">
+                        <!-- Sidebar Header -->
+                        <div data-sidebar="header" class="flex flex-col gap-2 p-2 px-4 py-5">
+                            <a href="{% url 'dashboard' %}" class="flex items-center gap-2.5" data-status="active">
+                                <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-[image:var(--gradient-deep)] text-primary-foreground shadow-warm">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4">
+                                        <path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z"></path>
+                                        <path d="M20 2v4"></path>
+                                        <path d="M22 4h-4"></path>
+                                        <circle cx="4" cy="20" r="2"></circle>
+                                    </svg>
+                                </div>
+                                <div class="flex flex-col leading-tight">
+                                    <span class="font-display text-sm font-semibold tracking-tight">CRM Система</span>
+                                    <span class="text-[11px] text-muted-foreground">Управление бизнесом</span>
+                                </div>
+                            </a>
+                        </div>
+
+                        <!-- Sidebar Content -->
+                        <div data-sidebar="content" class="flex min-h-0 flex-1 flex-col gap-2 overflow-auto px-2">
+                            <!-- Navigation Group -->
+                            <div data-sidebar="group" class="relative flex w-full min-w-0 flex-col p-2">
+                                <div data-sidebar="group-label" class="flex h-8 shrink-0 items-center rounded-md px-2 font-medium text-[11px] uppercase tracking-[0.12em] text-muted-foreground/70">
+                                    Навигация
+                                </div>
+                                <div data-sidebar="group-content" class="w-full text-sm">
+                                    <ul data-sidebar="menu" class="flex w-full min-w-0 flex-col gap-1">
+                                        <li data-sidebar="menu-item" class="group/menu-item relative">
+                                            <a data-sidebar="menu-button" href="{% url 'dashboard' %}" class="peer/menu-button flex w-full items-center gap-2 overflow-hidden rounded-md p-2 text-left ring-sidebar-ring cursor-pointer transition-all hover:bg-sidebar-accent hover:text-sidebar-accent-foreground h-8 text-sm flex items-center gap-3 {% if request.resolver_match.url_name == 'dashboard' %}bg-sidebar-accent font-medium text-sidebar-accent-foreground{% endif %}">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4">
+                                                    <rect width="7" height="9" x="3" y="3" rx="1"></rect>
+                                                    <rect width="7" height="5" x="14" y="3" rx="1"></rect>
+                                                    <rect width="7" height="9" x="14" y="12" rx="1"></rect>
+                                                    <rect width="7" height="5" x="3" y="16" rx="1"></rect>
+                                                </svg>
+                                                <span>Дашборд</span>
+                                            </a>
+                                        </li>
+                                        <li data-sidebar="menu-item" class="group/menu-item relative">
+                                            <a data-sidebar="menu-button" href="{% url 'orders_list' %}" class="peer/menu-button flex w-full items-center gap-2 overflow-hidden rounded-md p-2 text-left ring-sidebar-ring cursor-pointer transition-all hover:bg-sidebar-accent hover:text-sidebar-accent-foreground h-8 text-sm flex items-center gap-3 {% if request.resolver_match.url_name == 'orders_list' %}bg-sidebar-accent font-medium text-sidebar-accent-foreground{% endif %}">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4">
+                                                    <path d="M16 10a4 4 0 0 1-8 0"></path>
+                                                    <path d="M3.103 6.034h17.794"></path>
+                                                    <path d="M3.4 5.467a2 2 0 0 0-.4 1.2V20a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6.667a2 2 0 0 0-.4-1.2l-2-2.667A2 2 0 0 0 17 2H7a2 2 0 0 0-1.6.8z"></path>
+                                                </svg>
+                                                <span>Заказы</span>
+                                            </a>
+                                        </li>
+                                        <li data-sidebar="menu-item" class="group/menu-item relative">
+                                            <a data-sidebar="menu-button" href="#" class="peer/menu-button flex w-full items-center gap-2 overflow-hidden rounded-md p-2 text-left ring-sidebar-ring cursor-pointer transition-all hover:bg-sidebar-accent hover:text-sidebar-accent-foreground h-8 text-sm flex items-center gap-3">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4">
+                                                    <path d="M11 21.73a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73z"></path>
+                                                    <path d="M12 22V12"></path>
+                                                    <polyline points="3.29 7 12 12 20.71 7"></polyline>
+                                                    <path d="m7.5 4.27 9 5.15"></path>
+                                                </svg>
+                                                <span>Товары</span>
+                                            </a>
+                                        </li>
+                                        <li data-sidebar="menu-item" class="group/menu-item relative">
+                                            <a data-sidebar="menu-button" href="#" class="peer/menu-button flex w-full items-center gap-2 overflow-hidden rounded-md p-2 text-left ring-sidebar-ring cursor-pointer transition-all hover:bg-sidebar-accent hover:text-sidebar-accent-foreground h-8 text-sm flex items-center gap-3">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4">
+                                                    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+                                                    <path d="M16 3.128a4 4 0 0 1 0 7.744"></path>
+                                                    <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
+                                                    <circle cx="9" cy="7" r="4"></circle>
+                                                </svg>
+                                                <span>Клиенты</span>
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <!-- Analytics Group -->
+                            <div data-sidebar="group" class="relative flex w-full min-w-0 flex-col p-2">
+                                <div data-sidebar="group-label" class="flex h-8 shrink-0 items-center rounded-md px-2 font-medium text-[11px] uppercase tracking-[0.12em] text-muted-foreground/70">
+                                    Аналитика
+                                </div>
+                                <div data-sidebar="group-content" class="w-full text-sm">
+                                    <ul data-sidebar="menu" class="flex w-full min-w-0 flex-col gap-1">
+                                        <li data-sidebar="menu-item" class="group/menu-item relative">
+                                            <a data-sidebar="menu-button" href="#" class="peer/menu-button flex w-full items-center gap-2 overflow-hidden rounded-md p-2 text-left ring-sidebar-ring cursor-pointer transition-all hover:bg-sidebar-accent hover:text-sidebar-accent-foreground h-8 text-sm flex items-center gap-3">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4">
+                                                    <path d="M3 3v16a2 2 0 0 0 2 2h16"></path>
+                                                    <path d="M18 17V9"></path>
+                                                    <path d="M13 17V5"></path>
+                                                    <path d="M8 17v-3"></path>
+                                                </svg>
+                                                <span>Статистика</span>
+                                            </a>
+                                        </li>
+                                        <li data-sidebar="menu-item" class="group/menu-item relative">
+                                            <a data-sidebar="menu-button" href="#" class="peer/menu-button flex w-full items-center gap-2 overflow-hidden rounded-md p-2 text-left ring-sidebar-ring cursor-pointer transition-all hover:bg-sidebar-accent hover:text-sidebar-accent-foreground h-8 text-sm flex items-center gap-3">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4">
+                                                    <path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915"></path>
+                                                    <circle cx="12" cy="12" r="3"></circle>
+                                                </svg>
+                                                <span>Настройки</span>
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Sidebar Footer -->
+                        <div data-sidebar="footer" class="flex flex-col gap-2 p-3">
+                            <div class="flex items-center gap-3 rounded-xl bg-sidebar-accent/60 p-3">
+                                <div class="flex h-9 w-9 items-center justify-center rounded-full bg-[image:var(--gradient-warm)] text-sm font-semibold text-primary">
+                                    АИ
+                                </div>
+                                <div class="flex flex-col leading-tight">
+                                    <span class="text-sm font-medium">Админ И.</span>
+                                    <span class="text-[11px] text-muted-foreground">Администратор</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Main Content -->
+            <div class="flex flex-1 flex-col">
+                <!-- Header -->
+                <header class="sticky top-0 z-20 flex h-16 items-center gap-3 border-b border-border/60 bg-background/80 px-4 backdrop-blur-md md:px-8">
+                    <button class="inline-flex items-center justify-center h-7 w-7 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent cursor-pointer transition-colors" data-sidebar="trigger">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4">
+                            <rect width="18" height="18" x="3" y="3" rx="2"></rect>
+                            <path d="M9 3v18"></path>
+                        </svg>
+                        <span class="sr-only">Toggle Sidebar</span>
+                    </button>
+                    <div class="relative ml-2 hidden flex-1 max-w-md md:block">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground">
+                            <path d="m21 21-4.34-4.34"></path>
+                            <circle cx="11" cy="11" r="8"></circle>
+                        </svg>
+                        <input class="flex w-full h-10 rounded-full border border-border/60 bg-muted/60 pl-10 text-sm px-3 py-1 placeholder:text-muted-foreground focus-visible:ring-1 transition-colors" placeholder="Поиск заказов, клиентов, товаров...">
+                    </div>
+                    <div class="ml-auto flex items-center gap-2">
+                        <button class="inline-flex items-center justify-center h-9 w-9 rounded-full hover:bg-accent hover:text-accent-foreground cursor-pointer transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4">
+                                <path d="M10.268 21a2 2 0 0 0 3.464 0"></path>
+                                <path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326"></path>
+                            </svg>
+                        </button>
+                        <button class="inline-flex items-center justify-center h-9 rounded-full bg-[image:var(--gradient-deep)] px-4 text-primary-foreground shadow-warm hover:opacity-95 cursor-pointer transition-opacity" onclick="window.location.href='{% url 'orders_list' %}'">
+                            + Новый заказ
+                        </button>
+                    </div>
+                </header>
+
+                <!-- Page Content -->
+                <main class="flex-1 px-4 py-6 md:px-8 md:py-10">
+                    {% if messages %}
+                    <div class="mb-4">
+                        {% for message in messages %}
+                        <div class="rounded-lg border px-4 py-3 text-sm {% if message.tags == 'success' %}border-green-200 bg-green-50 text-green-800{% elif message.tags == 'error' %}border-red-200 bg-red-50 text-red-800{% else %}border-border/60 bg-muted/40{% endif %}">
+                            {{ message }}
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    {% block content %}{% endblock %}
+                </main>
+            </div>
+        </div>
+    </div>
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

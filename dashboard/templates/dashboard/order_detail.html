@@ -1,0 +1,442 @@
+{% extends 'base.html' %}
+
+{% block title %}Заказ #{{ order.id }} - CRM Система{% endblock %}
+
+{% block content %}
+<div class="mx-auto max-w-7xl">
+    <!-- Back button and header -->
+    <div class="mb-6 flex items-center gap-3">
+        <a href="{% url 'orders_list' %}" class="inline-flex items-center justify-center h-8 w-8 rounded-full text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4">
+                <path d="m15 18-6-6 6-6"></path>
+            </svg>
+        </a>
+        <div>
+            <h1 class="font-display text-2xl font-semibold tracking-tight">Заказ #{{ order.id }}</h1>
+            <p class="text-sm text-muted-foreground">{{ order.date|date:"d M Y" }} · {{ order.customer }}</p>
+        </div>
+        <div class="ml-auto">
+            <span class="inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-semibold border-transparent {{ order.status_class }}">
+                {{ order.get_status_display }}
+            </span>
+        </div>
+    </div>
+
+    <!-- Main form -->
+    <form method="post" id="main-form" class="rounded-xl border text-card-foreground shadow border-border/60 bg-card shadow-soft">
+        {% csrf_token %}
+        <input type="hidden" name="action" id="form-action" value="update_order">
+        <input type="hidden" name="item_idx" id="form-item-idx" value="">
+
+        <!-- Основная информация -->
+        <div class="p-6 border-b border-border/60">
+            <h2 class="text-lg font-semibold mb-4">Основная информация</h2>
+            <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
+                <div class="flex flex-col gap-1.5">
+                    <label class="text-xs uppercase tracking-[0.12em] text-muted-foreground">Источник</label>
+                    <input type="text" name="source" value="{{ order.source }}" class="flex w-full border px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring h-10 rounded-lg border-border/60 bg-muted/40">
+                </div>
+                <div class="flex flex-col gap-1.5">
+                    <label class="text-xs uppercase tracking-[0.12em] text-muted-foreground">№ Заказа</label>
+                    <input type="text" name="order_number" value="{{ order.order_number }}" placeholder="Автоматический" class="flex w-full border px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring h-10 rounded-lg border-border/60 bg-muted/40">
+                </div>
+                <div class="flex flex-col gap-1.5">
+                    <label class="text-xs uppercase tracking-[0.12em] text-muted-foreground">Имя курьера</label>
+                    <input type="text" name="courier_name" value="{{ order.courier_name }}" placeholder="Не назначен" class="flex w-full border px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring h-10 rounded-lg border-border/60 bg-muted/40">
+                </div>
+                <div class="flex flex-col gap-1.5">
+                    <label class="text-xs uppercase tracking-[0.12em] text-muted-foreground">Дата доставки</label>
+                    <select name="delivery_date" class="flex w-full border px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring h-10 rounded-lg border-border/60 bg-muted/40">
+                        <option value="">Нет даты доставки</option>
+                        {% for d in delivery_dates %}
+                        <option value="{{ d|date:'Y-m-d' }}" {% if order.delivery_date and order.delivery_date == d %}selected{% endif %}>{{ d|date:"d M Y" }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="flex flex-col gap-1.5">
+                    <label class="text-xs uppercase tracking-[0.12em] text-muted-foreground">Дата доставки (текст)</label>
+                    <input type="text" name="delivery_day" value="{{ order.delivery_day }}" placeholder="дд.мм" class="flex w-full border px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring h-10 rounded-lg border-border/60 bg-muted/40">
+                </div>
+                <div class="flex flex-col gap-1.5">
+                    <label class="text-xs uppercase tracking-[0.12em] text-muted-foreground">Временные ограничения</label>
+                    <input type="text" name="time_restrictions" value="{{ order.time_restrictions }}" placeholder="Например: доставить до 18:00" class="flex w-full border px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring h-10 rounded-lg border-border/60 bg-muted/40">
+                </div>
+            </div>
+        </div>
+
+        <!-- Контактные данные -->
+        <div class="p-6 border-b border-border/60">
+            <h2 class="text-lg font-semibold mb-4">Контактные данные</h2>
+            <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div class="flex flex-col gap-1.5">
+                    <label class="text-xs uppercase tracking-[0.12em] text-muted-foreground">Фамилия</label>
+                    <input type="text" name="last_name" value="{{ order.customer.last_name }}" placeholder="Фамилия" class="flex w-full border px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring h-10 rounded-lg border-border/60 bg-muted/40">
+                </div>
+                <div class="flex flex-col gap-1.5">
+                    <label class="text-xs uppercase tracking-[0.12em] text-muted-foreground">Имя</label>
+                    <input type="text" name="first_name" value="{{ order.customer.first_name }}" placeholder="Имя" class="flex w-full border px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring h-10 rounded-lg border-border/60 bg-muted/40">
+                </div>
+                <div class="flex flex-col gap-1.5">
+                    <label class="text-xs uppercase tracking-[0.12em] text-muted-foreground">Телефон</label>
+                    <input type="tel" name="phone" value="{{ order.customer.phone }}" placeholder="+7 (___) ___-__-__" class="flex w-full border px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring h-10 rounded-lg border-border/60 bg-muted/40">
+                </div>
+                <div class="flex flex-col gap-1.5">
+                    <label class="text-xs uppercase tracking-[0.12em] text-muted-foreground">E-mail</label>
+                    <input type="email" name="email" value="{{ order.customer.email }}" placeholder="email@example.com" class="flex w-full border px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring h-10 rounded-lg border-border/60 bg-muted/40">
+                </div>
+            </div>
+        </div>
+
+        <!-- Адрес -->
+        <div class="p-6 border-b border-border/60">
+            <h2 class="text-lg font-semibold mb-4">Адрес доставки</h2>
+            <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
+                <div class="flex flex-col gap-1.5 md:col-span-3">
+                    <label class="text-xs uppercase tracking-[0.12em] text-muted-foreground">Полный адрес</label>
+                    <textarea name="full_address" rows="2" placeholder="Город, улица, дом, квартира" class="flex w-full border px-3 py-2 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring rounded-lg border-border/60 bg-muted/40 resize-none">{{ order.customer.full_address }}</textarea>
+                </div>
+                <div class="flex flex-col gap-1.5">
+                    <label class="text-xs uppercase tracking-[0.12em] text-muted-foreground">Индекс</label>
+                    <input type="text" name="zip_code" value="{{ order.customer.zip_code }}" placeholder="000000" class="flex w-full border px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring h-10 rounded-lg border-border/60 bg-muted/40">
+                </div>
+                <div class="flex flex-col gap-1.5">
+                    <label class="text-xs uppercase tracking-[0.12em] text-muted-foreground">Регион</label>
+                    <input type="text" name="region" value="{{ order.customer.region }}" placeholder="Московская область" class="flex w-full border px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring h-10 rounded-lg border-border/60 bg-muted/40">
+                </div>
+                <div class="flex flex-col gap-1.5">
+                    <label class="text-xs uppercase tracking-[0.12em] text-muted-foreground">Адрес</label>
+                    <input type="text" name="street_address" value="{{ order.customer.street_address }}" placeholder="ул. Примерная, д. 1, кв. 1" class="flex w-full border px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring h-10 rounded-lg border-border/60 bg-muted/40">
+                </div>
+            </div>
+        </div>
+
+        <!-- Регион отправки -->
+        <div class="p-6 border-b border-border/60">
+            <h2 class="text-lg font-semibold mb-4">Регион и способ отправки</h2>
+            <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
+                <div class="flex flex-col gap-1.5">
+                    <label class="text-xs uppercase tracking-[0.12em] text-muted-foreground">Регион отправки</label>
+                    <select name="send_region" class="flex w-full border px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring h-10 rounded-lg border-border/60 bg-muted/40">
+                        <option value="0" {% if order.send_region == 0 %}selected{% endif %}>Не определён</option>
+                        <option value="1" {% if order.send_region == 1 %}selected{% endif %}>Москва</option>
+                        <option value="2" {% if order.send_region == 2 %}selected{% endif %}>Регионы РФ</option>
+                    </select>
+                </div>
+                <div class="flex flex-col gap-1.5">
+                    <label class="text-xs uppercase tracking-[0.12em] text-muted-foreground">Статус почты</label>
+                    <select name="post_status" class="flex w-full border px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring h-10 rounded-lg border-border/60 bg-muted/40">
+                        <option value="0" {% if order.post_status == 0 %}selected{% endif %}>Посылка в пути</option>
+                        <option value="1" {% if order.post_status == 1 %}selected{% endif %}>Прибыло в место вручения</option>
+                        <option value="2" {% if order.post_status == 2 %}selected{% endif %}>Адресат извещён</option>
+                        <option value="3" {% if order.post_status == 3 %}selected{% endif %}>Недозвон</option>
+                        <option value="4" {% if order.post_status == 4 %}selected{% endif %}>Заказ оплачен</option>
+                        <option value="5" {% if order.post_status == 5 %}selected{% endif %}>Внимание</option>
+                        <option value="6" {% if order.post_status == 6 %}selected{% endif %}>Отказ</option>
+                        <option value="7" {% if order.post_status == 7 %}selected{% endif %}>Перевод получен</option>
+                        <option value="8" {% if order.post_status == 8 %}selected{% endif %}>Возврат</option>
+                    </select>
+                </div>
+                <div class="flex flex-col gap-1.5">
+                    <label class="text-xs uppercase tracking-[0.12em] text-muted-foreground">Трек-номер</label>
+                    <input type="text" name="treck" value="{{ order.treck }}" placeholder="Трек-номер" class="flex w-full border px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring h-10 rounded-lg border-border/60 bg-muted/40">
+                </div>
+            </div>
+        </div>
+
+        <!-- Оплата -->
+        <div class="p-6 border-b border-border/60">
+            <h2 class="text-lg font-semibold mb-4">Оплата</h2>
+            <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
+                <div class="flex flex-col gap-1.5">
+                    <label class="text-xs uppercase tracking-[0.12em] text-muted-foreground">Статус оплаты</label>
+                    <select name="paid_status" class="flex w-full border px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring h-10 rounded-lg border-border/60 bg-muted/40">
+                        <option value="0" {% if order.paid_status == 0 %}selected{% endif %}>Все заказанные товары</option>
+                        <option value="1" {% if order.paid_status == 1 %}selected{% endif %}>Только купленные товары</option>
+                    </select>
+                </div>
+                <div class="flex flex-col gap-1.5">
+                    <label class="text-xs uppercase tracking-[0.12em] text-muted-foreground">Тип оплаты</label>
+                    <select name="post_pay" class="flex w-full border px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring h-10 rounded-lg border-border/60 bg-muted/40">
+                        <option value="0" {% if order.post_pay == 0 %}selected{% endif %}>Предоплата (не оплачена)</option>
+                        <option value="1" {% if order.post_pay == 1 %}selected{% endif %}>Наложенный платёж</option>
+                        <option value="2" {% if order.post_pay == 2 %}selected{% endif %}>Предоплата (оплачена)</option>
+                    </select>
+                </div>
+                <div class="flex flex-col gap-1.5">
+                    <label class="text-xs uppercase tracking-[0.12em] text-muted-foreground">Дата получения предоплаты</label>
+                    <input type="date" name="day_of_pay_accept" value="{% if order.day_of_pay_accept %}{{ order.day_of_pay_accept|date:'Y-m-d' }}{% endif %}" class="flex w-full border px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring h-10 rounded-lg border-border/60 bg-muted/40">
+                </div>
+                <div class="flex flex-col gap-1.5">
+                    <label class="text-xs uppercase tracking-[0.12em] text-muted-foreground">Способ получения оплаты</label>
+                    <input type="text" name="way_of_pay_accept" value="{{ order.way_of_pay_accept }}" placeholder="Карта Сбербанка, Qiwi..." class="flex w-full border px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring h-10 rounded-lg border-border/60 bg-muted/40">
+                </div>
+                <div class="flex flex-col gap-1.5">
+                    <label class="text-xs uppercase tracking-[0.12em] text-muted-foreground">Дата получения денег</label>
+                    <input type="date" name="date_of_money_get" value="{% if order.date_of_money_get %}{{ order.date_of_money_get|date:'Y-m-d' }}{% endif %}" class="flex w-full border px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring h-10 rounded-lg border-border/60 bg-muted/40">
+                </div>
+                <div class="flex flex-col gap-1.5">
+                    <label class="text-xs uppercase tracking-[0.12em] text-muted-foreground">Сумма доставки (СДЭК/Почта)</label>
+                    <input type="number" name="delivery_summ" value="{% if order.delivery_summ %}{{ order.delivery_summ }}{% endif %}" placeholder="0" class="flex w-full border px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring h-10 rounded-lg border-border/60 bg-muted/40">
+                </div>
+            </div>
+            <div class="grid grid-cols-1 gap-4 md:grid-cols-3 mt-4">
+                <div class="flex items-center gap-3">
+                    <input type="checkbox" name="cashless" id="cashless" {% if order.cashless %}checked{% endif %} class="h-4 w-4 rounded border-border/60 text-primary focus:ring-primary">
+                    <label for="cashless" class="text-sm cursor-pointer">Безналичный расчёт</label>
+                </div>
+                <div class="flex items-center gap-3">
+                    <input type="checkbox" name="office_send" id="office_send" {% if order.office_send %}checked{% endif %} class="h-4 w-4 rounded border-border/60 text-primary focus:ring-primary">
+                    <label for="office_send" class="text-sm cursor-pointer">Отправка из офиса</label>
+                </div>
+            </div>
+        </div>
+
+        <!-- СМС уведомления -->
+        <div class="p-6 border-b border-border/60">
+            <h2 class="text-lg font-semibold mb-4">СМС уведомления</h2>
+            <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
+                <div class="flex items-center gap-3">
+                    <input type="checkbox" name="sms" id="sms" {% if order.sms %}checked{% endif %} class="h-4 w-4 rounded border-border/60 text-primary focus:ring-primary">
+                    <label for="sms" class="text-sm cursor-pointer">СМС с треком отправлено</label>
+                </div>
+                <div class="flex items-center gap-3">
+                    <input type="checkbox" name="sms_promocode" id="sms_promocode" {% if order.sms_promocode %}checked{% endif %} class="h-4 w-4 rounded border-border/60 text-primary focus:ring-primary">
+                    <label for="sms_promocode" class="text-sm cursor-pointer">СМС с промокодом отправлено</label>
+                </div>
+                <div class="flex items-center gap-3">
+                    <input type="checkbox" name="call_back_email" id="call_back_email" {% if order.call_back_email %}checked{% endif %} class="h-4 w-4 rounded border-border/60 text-primary focus:ring-primary">
+                    <label for="call_back_email" class="text-sm cursor-pointer">Обратный звонок (email)</label>
+                </div>
+                <div class="flex flex-col gap-1.5">
+                    <label class="text-xs uppercase tracking-[0.12em] text-muted-foreground">Статус СМС с оплатой</label>
+                    <select name="sms_pay_info" class="flex w-full border px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring h-10 rounded-lg border-border/60 bg-muted/40">
+                        <option value="0" {% if order.sms_pay_info == 0 %}selected{% endif %}>Не отправлено</option>
+                        <option value="1" {% if order.sms_pay_info == 1 %}selected{% endif %}>Отправлено 1</option>
+                        <option value="2" {% if order.sms_pay_info == 2 %}selected{% endif %}>Отправлено 2</option>
+                        <option value="3" {% if order.sms_pay_info == 3 %}selected{% endif %}>Отправлено 3</option>
+                        <option value="4" {% if order.sms_pay_info == 4 %}selected{% endif %}>Отправлено 4</option>
+                        <option value="5" {% if order.sms_pay_info == 5 %}selected{% endif %}>Отправлено 5</option>
+                        <option value="6" {% if order.sms_pay_info == 6 %}selected{% endif %}>Отправлено 6</option>
+                        <option value="7" {% if order.sms_pay_info == 7 %}selected{% endif %}>Отправлено 7</option>
+                        <option value="8" {% if order.sms_pay_info == 8 %}selected{% endif %}>Отправлено 8</option>
+                        <option value="9" {% if order.sms_pay_info == 9 %}selected{% endif %}>Отправлено 9</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Доставка СДЭК -->
+        <div class="p-6 border-b border-border/60">
+            <div class="flex items-center gap-3 mb-4">
+                <input type="checkbox" name="send_cdek" id="send_cdek" {% if order.send_cdek %}checked{% endif %} class="h-4 w-4 rounded border-border/60 text-primary focus:ring-primary">
+                <label for="send_cdek" class="text-lg font-semibold cursor-pointer">Отправка СДЭК</label>
+            </div>
+            <div id="cdek-fields" class="{% if not order.send_cdek %}hidden{% endif %}">
+                <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
+                    <div class="flex flex-col gap-1.5">
+                        <label class="text-xs uppercase tracking-[0.12em] text-muted-foreground">Тариф</label>
+                        <select name="cdek_tariff" class="flex w-full border px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring h-10 rounded-lg border-border/60 bg-muted/40">
+                            <option value="">Выберите тариф</option>
+                            {% for value, label in order.CDEK_TARIFFS %}
+                            <option value="{{ value }}" {% if order.cdek_tariff == value %}selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="flex flex-col gap-1.5">
+                        <label class="text-xs uppercase tracking-[0.12em] text-muted-foreground">Код города СДЭК</label>
+                        <input type="text" name="cdek_city_code" value="{{ order.cdek_city_code }}" placeholder="184" class="flex w-full border px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring h-10 rounded-lg border-border/60 bg-muted/40">
+                    </div>
+                    <div class="flex flex-col gap-1.5">
+                        <label class="text-xs uppercase tracking-[0.12em] text-muted-foreground">Город СДЭК</label>
+                        <input type="text" name="cdek_city" value="{{ order.cdek_city }}" placeholder="Москва" class="flex w-full border px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring h-10 rounded-lg border-border/60 bg-muted/40">
+                    </div>
+                    <div class="flex flex-col gap-1.5">
+                        <label class="text-xs uppercase tracking-[0.12em] text-muted-foreground">Код ПВЗ</label>
+                        <input type="text" name="pvz_code" value="{{ order.pvz_code }}" placeholder="Код ПВЗ" class="flex w-full border px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring h-10 rounded-lg border-border/60 bg-muted/40">
+                    </div>
+                    <div class="flex flex-col gap-1.5 md:col-span-2">
+                        <label class="text-xs uppercase tracking-[0.12em] text-muted-foreground">Адрес ПВЗ</label>
+                        <input type="text" name="cdek_pickup_address" value="{{ order.cdek_pickup_address }}" placeholder="Адрес пункта выдачи" class="flex w-full border px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring h-10 rounded-lg border-border/60 bg-muted/40">
+                    </div>
+                    <div class="flex flex-col gap-1.5 md:col-span-3">
+                        <label class="text-xs uppercase tracking-[0.12em] text-muted-foreground">Адрес клиента СДЭК</label>
+                        <input type="text" name="cdek_address" value="{{ order.cdek_address }}" placeholder="Полный адрес для курьера" class="flex w-full border px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring h-10 rounded-lg border-border/60 bg-muted/40">
+                    </div>
+                    <div class="flex flex-col gap-1.5">
+                        <label class="text-xs uppercase tracking-[0.12em] text-muted-foreground">Улица</label>
+                        <input type="text" name="cdek_street" value="{{ order.cdek_street }}" placeholder="ул. Примерная" class="flex w-full border px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring h-10 rounded-lg border-border/60 bg-muted/40">
+                    </div>
+                    <div class="flex flex-col gap-1.5">
+                        <label class="text-xs uppercase tracking-[0.12em] text-muted-foreground">Дом</label>
+                        <input type="text" name="cdek_house" value="{{ order.cdek_house }}" placeholder="1" class="flex w-full border px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring h-10 rounded-lg border-border/60 bg-muted/40">
+                    </div>
+                    <div class="flex flex-col gap-1.5">
+                        <label class="text-xs uppercase tracking-[0.12em] text-muted-foreground">Квартира</label>
+                        <input type="text" name="cdek_apartment" value="{{ order.cdek_apartment }}" placeholder="1" class="flex w-full border px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring h-10 rounded-lg border-border/60 bg-muted/40">
+                    </div>
+                    <div class="flex flex-col gap-1.5">
+                        <label class="text-xs uppercase tracking-[0.12em] text-muted-foreground">Длина (см)</label>
+                        <input type="number" name="cdek_length" value="{{ order.cdek_length|default:'' }}" placeholder="0" class="flex w-full border px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring h-10 rounded-lg border-border/60 bg-muted/40">
+                    </div>
+                    <div class="flex flex-col gap-1.5">
+                        <label class="text-xs uppercase tracking-[0.12em] text-muted-foreground">Ширина (см)</label>
+                        <input type="number" name="cdek_width" value="{{ order.cdek_width|default:'' }}" placeholder="0" class="flex w-full border px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring h-10 rounded-lg border-border/60 bg-muted/40">
+                    </div>
+                    <div class="flex flex-col gap-1.5">
+                        <label class="text-xs uppercase tracking-[0.12em] text-muted-foreground">Высота (см)</label>
+                        <input type="number" name="cdek_height" value="{{ order.cdek_height|default:'' }}" placeholder="0" class="flex w-full border px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring h-10 rounded-lg border-border/60 bg-muted/40">
+                    </div>
+                    <div class="flex flex-col gap-1.5">
+                        <label class="text-xs uppercase tracking-[0.12em] text-muted-foreground">Вес (г)</label>
+                        <input type="number" name="cdek_weight" value="{{ order.cdek_weight|default:'' }}" placeholder="0" class="flex w-full border px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring h-10 rounded-lg border-border/60 bg-muted/40">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Товары -->
+        <div class="p-6 border-b border-border/60">
+            <h2 class="text-lg font-semibold mb-4">Товары</h2>
+
+            {% for item in order.items.all %}
+            <div class="flex flex-wrap items-center gap-3 p-3 rounded-lg bg-muted/40 mb-3">
+                <div class="flex-1 min-w-[200px]">
+                    <p class="font-medium text-sm">{{ item.product.name }}</p>
+                    <p class="text-xs text-muted-foreground">{{ item.product.category|default:"Без категории" }}</p>
+                </div>
+                <div class="flex items-center gap-2">
+                    <input type="number" name="item_qty_{{ forloop.counter0 }}" value="{{ item.quantity }}" min="1" class="w-14 border px-2 py-1 text-sm h-8 rounded-md border-border/60 bg-background text-center">
+                    <div class="font-medium text-sm w-24 text-right">₽ {{ item.unit_price|floatformat:0 }}</div>
+                    <input type="number" name="item_price_{{ forloop.counter0 }}" value="{{ item.product.price }}" min="0" placeholder="Цена" class="w-20 border px-2 py-1 text-sm h-8 rounded-md border-border/60 bg-background">
+                    <button type="button" onclick="removeItem({{ forloop.counter0 }})" class="inline-flex items-center justify-center h-8 w-8 rounded-full text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4">
+                            <path d="M3 6h18"></path>
+                            <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+                            <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            {% empty %}
+            <div class="p-8 text-center text-muted-foreground">
+                <p>Товары не добавлены</p>
+            </div>
+            {% endfor %}
+
+            <!-- Add product row -->
+            <div class="mt-4 grid grid-cols-1 gap-3 md:grid-cols-4">
+                <div class="flex flex-col gap-1.5 md:col-span-2">
+                    <label class="text-xs uppercase tracking-[0.12em] text-muted-foreground">Название товара</label>
+                    <input type="text" name="product_name" placeholder="Введите название..." class="flex w-full border px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring h-10 rounded-lg border-border/60 bg-muted/40">
+                </div>
+                <div class="flex flex-col gap-1.5">
+                    <label class="text-xs uppercase tracking-[0.12em] text-muted-foreground">Цена, ₽</label>
+                    <input type="number" name="product_price" value="0" min="0" class="flex w-full border px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring h-10 rounded-lg border-border/60 bg-muted/40">
+                </div>
+                <div class="flex flex-col gap-1.5">
+                    <label class="text-xs uppercase tracking-[0.12em] text-muted-foreground">Кол-во</label>
+                    <input type="number" name="product_qty" value="1" min="1" class="flex w-full border px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring h-10 rounded-lg border-border/60 bg-muted/40">
+                </div>
+            </div>
+        </div>
+
+        <!-- Заметки -->
+        <div class="p-6 border-b border-border/60">
+            <h2 class="text-lg font-semibold mb-4">Заметки</h2>
+            <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div class="flex flex-col gap-1.5">
+                    <label class="text-xs uppercase tracking-[0.12em] text-muted-foreground">Заметка (внутренняя)</label>
+                    <textarea name="note" rows="3" placeholder="Внутренняя заметка..." class="flex w-full border px-3 py-2 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring rounded-lg border-border/60 bg-muted/40 resize-none">{{ order.note }}</textarea>
+                </div>
+                <div class="flex flex-col gap-1.5">
+                    <label class="text-xs uppercase tracking-[0.12em] text-muted-foreground">Заметка для печати</label>
+                    <textarea name="note_print" rows="3" placeholder="Заметка для печати..." class="flex w-full border px-3 py-2 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring rounded-lg border-border/60 bg-muted/40 resize-none">{{ order.note_print }}</textarea>
+                </div>
+            </div>
+            <div class="mt-4 flex flex-col gap-1.5">
+                <label class="text-xs uppercase tracking-[0.12em] text-muted-foreground">История звонков</label>
+                <textarea name="recall_story" rows="3" placeholder="История звонков..." class="flex w-full border px-3 py-2 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring rounded-lg border-border/60 bg-muted/40 resize-none">{{ order.recall_story }}</textarea>
+            </div>
+            <div class="grid grid-cols-1 gap-4 md:grid-cols-3 mt-4">
+                <div class="flex flex-col gap-1.5">
+                    <label class="text-xs uppercase tracking-[0.12em] text-muted-foreground">Последний звонок (timestamp)</label>
+                    <input type="number" name="last_call_mark" value="{{ order.last_call_mark }}" placeholder="0" class="flex w-full border px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring h-10 rounded-lg border-border/60 bg-muted/40">
+                </div>
+                <div class="flex flex-col gap-1.5">
+                    <label class="text-xs uppercase tracking-[0.12em] text-muted-foreground">Следующий звонок (timestamp)</label>
+                    <input type="number" name="client_next_call" value="{{ order.client_next_call }}" placeholder="0" class="flex w-full border px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring h-10 rounded-lg border-border/60 bg-muted/40">
+                </div>
+                <div class="flex flex-col gap-1.5">
+                    <label class="text-xs uppercase tracking-[0.12em] text-muted-foreground">Сумма возврата</label>
+                    <input type="number" name="return_summ" value="{% if order.return_summ %}{{ order.return_summ }}{% endif %}" placeholder="0" class="flex w-full border px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring h-10 rounded-lg border-border/60 bg-muted/40">
+                </div>
+            </div>
+        </div>
+
+        <!-- Финансы -->
+        <div class="p-6">
+            <h2 class="text-lg font-semibold mb-4">Финансы</h2>
+            <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div class="flex flex-col gap-1.5">
+                    <label class="text-xs uppercase tracking-[0.12em] text-muted-foreground">Сумма без доставки</label>
+                    <input type="text" value="₽ {{ order.subtotal|floatformat:0 }}" disabled class="flex w-full border px-3 py-1 text-sm h-10 rounded-lg border-border/60 bg-muted/40 text-muted-foreground cursor-not-allowed font-medium">
+                </div>
+                <div class="flex flex-col gap-1.5">
+                    <label class="text-xs uppercase tracking-[0.12em] text-muted-foreground">Стоимость доставки для клиента</label>
+                    <input type="number" name="delivery_cost_customer" value="{% if order.delivery_cost_customer %}{{ order.delivery_cost_customer }}{% endif %}" placeholder="0" class="flex w-full border px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring h-10 rounded-lg border-border/60 bg-muted/40">
+                </div>
+                <div class="flex flex-col gap-1.5">
+                    <label class="text-xs uppercase tracking-[0.12em] text-muted-foreground">Сумма с доставкой</label>
+                    <input type="text" value="₽ {{ order.total_with_delivery|floatformat:0 }}" disabled class="flex w-full border px-3 py-1 text-sm h-10 rounded-lg border-border/60 bg-muted/40 text-muted-foreground cursor-not-allowed font-medium">
+                </div>
+                <div class="flex flex-col gap-1.5">
+                    <label class="text-xs uppercase tracking-[0.12em] text-muted-foreground">Затраты на доставку (магазин)</label>
+                    <input type="number" name="delivery_cost_actual" value="{% if order.delivery_cost_actual %}{{ order.delivery_cost_actual }}{% endif %}" placeholder="0" class="flex w-full border px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring h-10 rounded-lg border-border/60 bg-muted/40">
+                </div>
+                <div class="flex flex-col gap-1.5">
+                    <label class="text-xs uppercase tracking-[0.12em] text-muted-foreground">Скидка</label>
+                    <input type="number" name="discount" value="{% if order.discount %}{{ order.discount }}{% endif %}" placeholder="0" class="flex w-full border px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring h-10 rounded-lg border-border/60 bg-muted/40">
+                </div>
+                <div class="flex flex-col gap-1.5">
+                    <label class="text-xs uppercase tracking-[0.12em] text-muted-foreground">Скидка по промокоду</label>
+                    <input type="number" name="promo_discount" value="{% if order.promo_discount %}{{ order.promo_discount }}{% endif %}" placeholder="0" class="flex w-full border px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring h-10 rounded-lg border-border/60 bg-muted/40">
+                </div>
+            </div>
+        </div>
+
+        <!-- Status and Save -->
+        <div class="p-6 border-t border-border/60 bg-muted/30 flex flex-wrap items-center justify-between gap-3">
+            <div class="flex items-center gap-3">
+                <label class="text-xs uppercase tracking-[0.12em] text-muted-foreground">Статус:</label>
+                <select name="status" class="border px-3 py-1 text-sm h-10 rounded-lg border-border/60 bg-background shadow-sm">
+                    {% for value, label in order.STATUS_CHOICES %}
+                    <option value="{{ value }}" {% if order.status == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <button type="submit" class="inline-flex items-center justify-center gap-2 whitespace-nowrap font-medium cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring bg-primary text-primary-foreground shadow-warm hover:opacity-95 h-10 px-6 text-sm rounded-full">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4">
+                    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                    <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                    <polyline points="7 3 7 8 15 8"></polyline>
+                </svg>
+                Сохранить изменения
+            </button>
+        </div>
+    </form>
+</div>
+
+<script>
+    document.getElementById('send_cdek').addEventListener('change', function() {
+        document.getElementById('cdek-fields').classList.toggle('hidden', !this.checked);
+    });
+
+    function removeItem(idx) {
+        if (confirm('Удалить товар?')) {
+            document.getElementById('form-action').value = 'remove_item';
+            document.getElementById('form-item-idx').value = idx;
+            document.getElementById('main-form').submit();
+        }
+    }
+</script>
+{% endblock %}

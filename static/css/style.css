@@ -1,0 +1,28 @@
+/* Additional custom styles for CRM Dashboard */
+
+body {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* Progress bar animation */
+div[role="progressbar"] > div {
+    animation: progress-fill 1s ease-out;
+}
+
+@keyframes progress-fill {
+    from {
+        transform: translateX(-100%);
+    }
+}
+
+/* Button focus states */
+button:focus-visible {
+    outline: 2px solid #9A9080;
+    outline-offset: 2px;
+}
+
+/* Input focus states */
+input:focus-visible {
+    box-shadow: 0 0 0 1px #9A9080;
+}
